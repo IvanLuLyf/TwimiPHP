@@ -68,7 +68,7 @@ function tp_run()
     $action = $route['action'];
     if (isset($mod)) {
         if (file_exists(APP_PATH . "mod/$mod.php")) {
-            include APP_PATH . "mods/$mod.php";
+            include APP_PATH . "mod/$mod.php";
             if ($action != null) {
                 tp_call_action('ac_' . $action);
             } else if ($action == null) {
