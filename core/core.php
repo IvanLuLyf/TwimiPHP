@@ -17,8 +17,13 @@ function tp_route()
 
         $url_array = explode('/', $request_url);
         $url_array = array_filter($url_array);
-        $mod = ucfirst($url_array[0]);
+        $mod = $url_array ? $url_array[0] : null;
         array_shift($url_array);
+        if ($mod == 'api') {
+            define("IN_TWIMI_API", "True", TRUE);
+            $mod = $url_array ? $url_array[0] : null;
+            array_shift($url_array);
+        }
         $action = $url_array ? $url_array[0] : null;
         array_shift($url_array);
         $param = $url_array ? $url_array : array();
@@ -48,6 +53,8 @@ function tp_call_action($action)
         } catch (ReflectionException $e) {
             call_user_func($action);
         }
+    } else {
+        view::error(['ret' => '-2', 'status' => 'action not exists', 'tp_error_msg' => "Action不存在"]);
     }
 }
 
