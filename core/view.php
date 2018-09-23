@@ -5,7 +5,9 @@ class view
     public static function get_url($mod, $action, $params = [])
     {
         $query = http_build_query($params);
-        return "index.php?mod=$mod&action=$action&$query";
+        if (TP_SITE_REWRITE)
+            return "/${mod}/${action}?${query}";
+        return "/index.php?mod=${mod}&action=${action}&${query}";
     }
 
     public static function redirect($url, $action = null, $params = [])
@@ -14,7 +16,11 @@ class view
             header("Location: $url");
         } else {
             $query = http_build_query($params);
-            header("Location: index.php?mod=$url&action=$action&$query");
+            if (TP_SITE_REWRITE) {
+                header("Location: /${url}/${action}?${query}");
+            } else {
+                header("Location: /index.php?mod=$url&action=$action&$query");
+            }
         }
     }
 
@@ -24,7 +30,13 @@ class view
             echo json_encode($context);
         } else {
             extract($context);
-            include "template/$view";
+            if (file_exists("template/$view")) {
+                include "template/$view";
+            } else if ($view == '' || $view == null) {
+
+            } else {
+                self::error(['ret' => '-3', 'status' => 'template not exists', 'tp_error_msg' => "模板${view}不存在"]);
+            }
         }
     }
 
