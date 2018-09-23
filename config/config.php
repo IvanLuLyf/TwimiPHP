@@ -8,6 +8,7 @@ define("DB_PASS", "password");
 
 define("TP_SITE_NAME", "Your Site Name");
 define("TP_SITE_URL", "example.com");
+define("TP_SITE_REWRITE", false);
 
 define("QQ_LOGIN", true);
 define("QQ_APP_KEY", '');
