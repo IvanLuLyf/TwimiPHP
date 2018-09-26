@@ -1,10 +1,12 @@
 <?php
 if (!defined("IN_TWIMI_PHP")) die('{"status":"forbidden access"}');
 date_default_timezone_set('PRC');
+define("DB_TYPE", "sqlite");
 define("DB_HOST", "localhost");
-define("DB_NAME", "database");
+define("DB_NAME", "database.db");
 define("DB_USER", "username");
 define("DB_PASS", "password");
+define("DB_PREFIX", "");
 
 define("TP_SITE_NAME", "Your Site Name");
 define("TP_SITE_URL", "example.com");
