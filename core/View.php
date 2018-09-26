@@ -1,6 +1,6 @@
 <?php
 
-class view
+class View
 {
     public static function get_url($mod, $action, $params = [])
     {
