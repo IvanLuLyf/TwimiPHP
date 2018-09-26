@@ -1,14 +1,16 @@
 <?php
 if (!defined("IN_TWIMI_PHP")) die('{"status":"forbidden access"}');
-include APP_PATH . "core/database.php";
-include APP_PATH . "core/view.php";
+include APP_PATH . "core/Database.php";
+include APP_PATH . "core/View.php";
+include APP_PATH . "core/Model.php";
+include APP_PATH . "core/Config.php";
 
 function tp_route()
 {
     if (isset($_REQUEST['mod'])) {
         $mod = $_REQUEST['mod'];
         $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : null;
-        return ['mod' => $mod, 'action' => $action];
+        return ['mod' => $mod, 'action' => $action, 'method' => strtolower($_SERVER['REQUEST_METHOD'])];
     } else {
         $request_url = $_SERVER['REQUEST_URI'];
         $position = strpos($request_url, '?');
@@ -27,7 +29,7 @@ function tp_route()
         $action = $url_array ? $url_array[0] : null;
         array_shift($url_array);
         $param = $url_array ? $url_array : array();
-        return ['mod' => $mod, 'action' => $action, 'param' => $param];
+        return ['mod' => $mod, 'action' => $action, 'method' => strtolower($_SERVER['REQUEST_METHOD']), 'param' => $param];
     }
 }
 
@@ -54,17 +56,22 @@ function tp_call_action($action)
             call_user_func($action);
         }
     } else {
-        view::error(['ret' => '-2', 'status' => 'action not exists', 'tp_error_msg' => "Action不存在"]);
+        View::error(['ret' => '-2', 'status' => 'action not exists', 'tp_error_msg' => "Action不存在"]);
     }
 }
 
 function tp_call_class($mod, $action)
 {
-    $controller = ucfirst($mod) . 'Controller';
-    if (!class_exists($controller)) {
-        view::error(['ret' => '-1', 'status' => 'mod not exists', 'tp_error_msg' => "模块${mod}不存在"]);
+    $modClass = ucfirst($mod) . 'Mod';
+    if (!class_exists($modClass)) {
+        View::error(['ret' => '-1', 'status' => 'mod not exists', 'tp_error_msg' => "模块${mod}不存在"]);
     } else {
-
+        $controller = new $modClass();
+        if (method_exists($controller, 'ac_' . $action)) {
+            call_user_func_array([$controller, 'ac_' . $action], []);
+        } else {
+            View::error(['ret' => '-2', 'status' => 'action not exists', 'tp_error_msg' => "Action不存在"]);
+        }
     }
 }
 
@@ -81,15 +88,22 @@ function tp_run()
             } else if ($action == null) {
                 tp_call_action("ac_index");
             }
-        } elseif (file_exists(APP_PATH . "controller/${mod}Controller.php")) {
-            include APP_PATH . "controller/${mod}Controller.php";
+        } elseif (file_exists(APP_PATH . "mod/${mod}Mod.php")) {
+            include APP_PATH . "mod/${mod}Mod.php";
+            if ($action != null) {
+                tp_call_class($mod, $action);
+            } else if ($action == null) {
+                tp_call_class($mod, "ac_index");
+            }
+        } elseif (file_exists(APP_PATH . "controller/OtherMod.php")) {
+            include APP_PATH . "mod/OtherMod.php";
             if ($action != null) {
                 tp_call_class($mod, $action);
             } else if ($action == null) {
                 tp_call_class($mod, "ac_index");
             }
         } else {
-            view::error(['ret' => '-1', 'status' => 'mod not exists', 'tp_error_msg' => "模块${mod}不存在"]);
+            View::error(['ret' => '-1', 'status' => 'mod not exists', 'tp_error_msg' => "模块${mod}不存在"]);
         }
     }
 }
